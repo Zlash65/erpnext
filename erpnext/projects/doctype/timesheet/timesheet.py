@@ -21,9 +21,12 @@ class OverProductionLoggedError(frappe.ValidationError): pass
 class Timesheet(Document):
 	def onload(self):
 		self.get("__onload").maintain_bill_work_hours_same = frappe.db.get_single_value('HR Settings', 'maintain_bill_work_hours_same')
+		# self.doc_copy = frappe.get_doc('Timesheet', self.name)		
 
 	def validate(self):
-		self.set_employee_name()
+		# self.doc_copy = frappe.get_doc('Timesheet', self.name)
+		if not self.is_team:
+			self.set_employee_name()
 		self.set_status()
 		self.validate_dates()
 		self.validate_time_logs()
@@ -31,6 +34,14 @@ class Timesheet(Document):
 		self.calculate_total_amounts()
 		self.calculate_percentage_billed()
 		self.set_dates()
+
+	def on_update(self):
+		self.doc_copy = frappe.get_doc('Timesheet', self.name)
+		employees = frappe.get_doc('Team', self.team_name)
+		# frappe.errprint(employees.team_member)
+		for d in employees.team_member:
+			emp = frappe.get_doc('Employee', d)
+			frappe.errprint(emp)
 
 	def set_employee_name(self):
 		if self.employee and not self.employee_name:
