@@ -9,9 +9,9 @@ from erpnext.projects.doctype.task.task import CircularReferenceError
 
 class TestTask(unittest.TestCase):
 	def test_circular_reference(self):
-		task1 = create_task("_Test Task 1", "2015-01-01", "2015-01-10")
-		task2 = create_task("_Test Task 2", "2015-01-11", "2015-01-15", task1.name)
-		task3 = create_task("_Test Task 3", "2015-01-11", "2015-01-15", task2.name)
+		task1 = create_task("_Test Task 1", nowdate(), add_days(nowdate(), 10))
+		task2 = create_task("_Test Task 2", add_days(nowdate(), 11), add_days(nowdate(), 15), task1.name)
+		task3 = create_task("_Test Task 3", add_days(nowdate(), 11), add_days(nowdate(), 15), task2.name)
 
 		task1.reload()
 		task1.append("depends_on", {
