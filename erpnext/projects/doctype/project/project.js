@@ -111,6 +111,11 @@ frappe.ui.form.on("Project Task", {
 			frappe.msgprint(__("Save the document first."));
 		}
 	},
+	edit_timesheets: function(frm, cdt, cdn) {
+		var child = locals[cdt][cdn];
+		frappe.route_options = {"project": frm.doc.project_name, "task": child.task_id}
+		frappe.set_route("List", "Timesheet");
+	},
 	status: function(frm, doctype, name) {
 		frm.trigger('tasks_refresh');
 	},
