@@ -473,7 +473,7 @@ class TestStockEntry(unittest.TestCase):
 		set_perpetual_inventory(0, company)
 		frappe.get_doc("User", "test2@example.com")\
 			.add_roles("Sales User", "Sales Manager", "Stock User", "Stock Manager")
-		frappe.set_user("test2@example.com")
+		frappe.set_user(frappe.get_doc("User", "test2@example.com").username)
 
 		from erpnext.stock.utils import InvalidWarehouseCompany
 		st1 = frappe.copy_doc(test_records[0])
@@ -496,14 +496,14 @@ class TestStockEntry(unittest.TestCase):
 		frappe.get_doc("User", "test2@example.com")\
 			.add_roles("Sales User", "Sales Manager", "Stock User", "Stock Manager")
 
-		frappe.set_user("test@example.com")
+		frappe.set_user(frappe.get_doc("User", "test@example.com").username)
 		st1 = frappe.copy_doc(test_records[0])
 		st1.company = "_Test Company 1"
 		set_perpetual_inventory(0, st1.company)
 		st1.get("items")[0].t_warehouse="_Test Warehouse 2 - _TC1"
 		self.assertRaises(frappe.PermissionError, st1.insert)
 
-		frappe.set_user("test2@example.com")
+		frappe.set_user(frappe.get_doc("User", "test2@example.com").username)
 		st1 = frappe.copy_doc(test_records[0])
 		st1.company = "_Test Company 1"
 		st1.get("items")[0].t_warehouse="_Test Warehouse 2 - _TC1"
