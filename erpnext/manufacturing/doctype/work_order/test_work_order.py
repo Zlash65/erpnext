@@ -291,7 +291,7 @@ class TestWorkOrder(unittest.TestCase):
 		s.insert()
 		s.submit()
 
-		wo_order_details = frappe.db.get_value("Production Order", wo_order.name,
+		wo_order_details = frappe.db.get_value("Work Order", wo_order.name,
 			["scrap_warehouse", "qty", "produced_qty", "bom_no"], as_dict=1)
 
 		scrap_item_details = get_scrap_item_details(wo_order_details.bom_no)
@@ -314,7 +314,7 @@ def get_scrap_item_details(bom_no):
 def make_wo_order_test_record(**args):
 	args = frappe._dict(args)
 
-	wo_order = frappe.new_doc("Production Order")
+	wo_order = frappe.new_doc("Work Order")
 	wo_order.production_item = args.production_item or args.item or args.item_code or "_Test FG Item"
 	wo_order.bom_no = frappe.db.get_value("BOM", {"item": wo_order.production_item,
 		"is_active": 1, "is_default": 1})
@@ -341,5 +341,5 @@ def make_wo_order_test_record(**args):
 			wo_order.submit()
 	return wo_order
 
-test_records = frappe.get_test_records('Production Order')
+test_records = frappe.get_test_records('Work Order')
 

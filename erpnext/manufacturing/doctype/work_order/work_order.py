@@ -114,7 +114,7 @@ class WorkOrder(Document):
 
 	def validate_work_order_against_so(self):
 		# already ordered qty
-		ordered_qty_against_so = frappe.db.sql("""select sum(qty) from `tabProduction Order`
+		ordered_qty_against_so = frappe.db.sql("""select sum(qty) from `tabWork Order`
 			where production_item = %s and sales_order = %s and docstatus < 2 and name != %s""",
 			(self.production_item, self.sales_order, self.name))[0][0]
 
@@ -139,7 +139,7 @@ class WorkOrder(Document):
 				.format(self.production_item, so_qty), OverProductionError)
 
 	def update_status(self, status=None):
-		'''Update status of production order if unknown'''
+		'''Update status of work order if unknown'''
 		if status != "Stopped":
 			status = self.get_status(status)
 
@@ -151,7 +151,7 @@ class WorkOrder(Document):
 		return status
 
 	def get_status(self, status=None):
-		'''Return the status based on stock entries against this production order'''
+		'''Return the status based on stock entries against this work order'''
 		if not status:
 			status = self.status
 
@@ -175,7 +175,7 @@ class WorkOrder(Document):
 		return status
 
 	def update_work_order_qty(self):
-		"""Update **Manufactured Qty** and **Material Transferred for Qty** in Production Order
+		"""Update **Manufactured Qty** and **Material Transferred for Qty** in Work Order
 			based on Stock Entry"""
 
 		for purpose, fieldname in (("Manufacture", "produced_qty"),
@@ -185,7 +185,7 @@ class WorkOrder(Document):
 				and purpose=%s""", (self.name, purpose))[0][0])
 
 			if qty > self.qty:
-				frappe.throw(_("{0} ({1}) cannot be greater than planned quanitity ({2}) in Production Order {3}").format(\
+				frappe.throw(_("{0} ({1}) cannot be greater than planned quanitity ({2}) in Work Order {3}").format(\
 					self.meta.get_label(fieldname), qty, self.qty, self.name), StockOverProductionError)
 
 			self.db_set(fieldname, qty)
@@ -214,9 +214,9 @@ class WorkOrder(Document):
 
 	def validate_cancel(self):
 		if self.status == "Stopped":
-			frappe.throw(_("Stopped Production Order cannot be cancelled, Unstop it first to cancel"))
+			frappe.throw(_("Stopped Work Order cannot be cancelled, Unstop it first to cancel"))
 
-		# Check whether any stock entry exists against this Production Order
+		# Check whether any stock entry exists against this Work Order
 		stock_entry = frappe.db.sql("""select name from `tabStock Entry`
 			where work_order = %s and docstatus = 1""", self.name)
 		if stock_entry:
@@ -236,7 +236,7 @@ class WorkOrder(Document):
 			frappe.get_doc("Material Request", self.material_request).update_completed_qty([self.material_request_item])
 
 	def set_work_order_operations(self):
-		"""Fetch operations from BOM and set in 'Production Order'"""
+		"""Fetch operations from BOM and set in 'Work Order'"""
 		self.set('operations', [])
 
 		if not self.bom_no \
@@ -405,7 +405,7 @@ class WorkOrder(Document):
 
 	def validate_production_item(self):
 		if frappe.db.get_value("Item", self.production_item, "has_variants"):
-			frappe.throw(_("Production Order cannot be raised against a Item Template"), ItemHasVariantError)
+			frappe.throw(_("Work Order cannot be raised against a Item Template"), ItemHasVariantError)
 
 		if self.production_item:
 			validate_end_of_life(self.production_item)
@@ -478,7 +478,7 @@ class WorkOrder(Document):
 
 	def update_transaferred_qty_for_required_items(self):
 		'''update transferred qty from submitted stock entries for that item against
-			the production order'''
+			the work order'''
 
 		for d in self.required_items:
 			transferred_qty = frappe.db.sql('''select sum(qty)
@@ -546,13 +546,13 @@ def check_if_scrap_warehouse_mandatory(bom_no):
 
 @frappe.whitelist()
 def set_work_order_ops(name):
-	po = frappe.get_doc('Production Order', name)
+	po = frappe.get_doc('Work Order', name)
 	po.set_work_order_operations()
 	po.save()
 
 @frappe.whitelist()
 def make_stock_entry(work_order_id, purpose, qty=None):
-	work_order = frappe.get_doc("Production Order", work_order_id)
+	work_order = frappe.get_doc("Work Order", work_order_id)
 	if not frappe.db.get_value("Warehouse", work_order.wip_warehouse, "is_group") \
 			and not work_order.skip_transfer:
 		wip_warehouse = work_order.wip_warehouse
@@ -610,7 +610,7 @@ def get_default_warehouse():
 
 @frappe.whitelist()
 def make_new_timesheet(source_name, target_doc=None):
-	po = frappe.get_doc('Production Order', source_name)
+	po = frappe.get_doc('Work Order', source_name)
 	ts = po.make_time_logs(open_new=True)
 
 	if not ts or not ts.get('time_logs'):
@@ -622,13 +622,13 @@ def make_new_timesheet(source_name, target_doc=None):
 def stop_unstop(work_order, status):
 	""" Called from client side on Stop/Unstop event"""
 
-	if not frappe.has_permission("Production Order", "write"):
+	if not frappe.has_permission("Work Order", "write"):
 		frappe.throw(_("Not permitted"), frappe.PermissionError)
 
-	pro_order = frappe.get_doc("Production Order", work_order)
+	pro_order = frappe.get_doc("Work Order", work_order)
 	pro_order.update_status(status)
 	pro_order.update_planned_qty()
-	frappe.msgprint(_("Production Order has been {0}").format(status))
+	frappe.msgprint(_("Work Order has been {0}").format(status))
 	pro_order.notify_update()
 
 	return pro_order.status
