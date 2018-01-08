@@ -7,7 +7,8 @@ from __future__ import unicode_literals
 import unittest
 import frappe
 from frappe.utils import flt, time_diff_in_hours, now, add_days, cint
-from erpnext.stock.doctype.purchase_receipt.test_purchase_receipt import set_perpetual_inventory
+# from erpnext.stock.doctype.purchase_receipt.test_purchase_receipt import set_perpetual_inventory
+from erpnext import set_perpetual_inventory
 from erpnext.manufacturing.doctype.work_order.work_order \
 	import make_stock_entry, ItemHasVariantError, stop_unstop
 from erpnext.stock.doctype.stock_entry import test_stock_entry
@@ -61,7 +62,7 @@ class TestWorkOrder(unittest.TestCase):
 		return wo_order
 
 	def test_over_production(self):
-		from erpnext.manufacturing.doctype.production_order.production_order import StockOverProductionError
+		from erpnext.manufacturing.doctype.work_order.work_order import StockOverProductionError
 		wo_doc = self.check_planned_qty()
 
 		test_stock_entry.make_stock_entry(item_code="_Test Item",
@@ -189,7 +190,7 @@ class TestWorkOrder(unittest.TestCase):
 		sales_order = make_sales_order(item = self.item, qty = 2)
 		after_sales_order = get_bin(self.item, self.warehouse)
 
-		self.assertEqual(cint(before_wo_order.reserved_qty_for_production) + 2,
+		self.assertEqual(cint(before_work_order.reserved_qty_for_production) + 2,
 			cint(after_sales_order.reserved_qty_for_production))
 		self.assertEqual(cint(before_work_order.projected_qty),
 			cint(after_sales_order.projected_qty) + 2)
