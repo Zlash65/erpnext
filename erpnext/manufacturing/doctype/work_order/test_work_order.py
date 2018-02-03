@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
 
@@ -7,8 +6,7 @@ from __future__ import unicode_literals
 import unittest
 import frappe
 from frappe.utils import flt, time_diff_in_hours, now, add_days, cint
-# from erpnext.stock.doctype.purchase_receipt.test_purchase_receipt import set_perpetual_inventory
-from erpnext import set_perpetual_inventory
+from erpnext.stock.doctype.purchase_receipt.test_purchase_receipt import set_perpetual_inventory
 from erpnext.manufacturing.doctype.work_order.work_order \
 	import make_stock_entry, ItemHasVariantError, stop_unstop
 from erpnext.stock.doctype.stock_entry import test_stock_entry
@@ -343,4 +341,3 @@ def make_wo_order_test_record(**args):
 	return wo_order
 
 test_records = frappe.get_test_records('Work Order')
-
