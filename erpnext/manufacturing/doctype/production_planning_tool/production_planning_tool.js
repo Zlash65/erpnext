@@ -51,10 +51,10 @@ frappe.ui.form.on("Production Planning Tool", {
 		});
 	},
 	
-	create_production_order: function(frm) {
+	create_work_order: function(frm) {
 		frappe.call({
 			doc: frm.doc,
-			method: "raise_production_orders"
+			method: "raise_work_orders"
 		});
 	},
 	
