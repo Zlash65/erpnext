@@ -35,6 +35,19 @@ frappe.ui.form.on("Task", {
 			}
 
 			if(!doc.__islocal) {
+				frm.add_custom_button(__("Work Order"), function() {
+					if(doc.__unsaved){
+						frappe.msgprint("Please save the form before proceeding to making Work Order");
+					} else if(!doc.bom_no) {
+						frappe.msgprint("Please create a BOM for the given task first.");
+					} else {
+						frappe.model.open_mapped_doc({
+							method: "erpnext.projects.doctype.task.task.make_work_order",
+							frm: cur_frm
+						})
+					}
+				}, __("Make"));
+
 				if(frappe.model.can_read("Timesheet")) {
 					frm.add_custom_button(__("Timesheet"), function() {
 						frappe.route_options = {"project": doc.project, "task": doc.name}
@@ -71,6 +84,15 @@ frappe.ui.form.on("Task", {
 				query: "erpnext.projects.doctype.task.task.get_project"
 			}
 		};
+
+		frm.set_query("bom_no", function() {
+			return {
+				filters: {
+					company: frm.doc.company,
+					project: frm.doc.project
+				}
+			}
+		});
 	},
 
 	project: function(frm) {

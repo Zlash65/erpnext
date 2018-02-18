@@ -6,6 +6,7 @@ import frappe, json
 
 from frappe.utils import getdate, date_diff, add_days, cstr
 from frappe import _, throw
+from frappe.model.mapper import get_mapped_doc
 from frappe.utils.nestedset import NestedSet
 
 class CircularReferenceError(frappe.ValidationError): pass
@@ -225,3 +226,17 @@ def add_multiple_tasks(data, parent):
 		new_doc['subject'] = d
 		new_task = frappe.get_doc(new_doc)
 		new_task.insert()
+
+@frappe.whitelist()
+def make_work_order(source_name, target_doc=None):
+	bom_no = frappe.db.get_value("Task", source_name, "bom_no")
+	item = frappe.db.get_value("BOM", bom_no, "item")
+
+	doclist = get_mapped_doc("Task", source_name, 	{
+		"Task": {
+			"doctype": "Work Order",
+		}
+	}, target_doc)
+	doclist.production_item = item
+
+	return doclist
