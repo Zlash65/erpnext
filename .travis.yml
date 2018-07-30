@@ -29,6 +29,10 @@ before_script:
   - echo "USE mysql;\nCREATE USER 'test_frappe'@'localhost' IDENTIFIED BY 'test_frappe';\nFLUSH PRIVILEGES;\n" | mysql -u root -ptravis
   - echo "USE mysql;\nGRANT ALL PRIVILEGES ON \`test_frappe\`.* TO 'test_frappe'@'localhost';\n" | mysql -u root -ptravis
 
+  - cd ~/frappe-bench/apps/frappe
+  - git remote add zlash https://github.com/Zlash65/frappe.git
+  - git fetch zlash fix-travis
+  - git checkout fix-travis
   - cd ~/frappe-bench
   - bench get-app erpnext $TRAVIS_BUILD_DIR
   - bench use test_site
@@ -44,7 +48,7 @@ jobs:
     - stage: test
       script:
         - set -e
-        - bench run-tests --app erpnext
+        - bench run-tests --app erpnext --doctype "Tax Withholding Category"
       env: Server Side Test
     - # stage
       script:
