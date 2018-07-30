@@ -90,7 +90,8 @@ def get_tds_amount(ref_doc, tax_details, fiscal_year_details):
 
 		debit_note_amount = get_debit_note_amount(ref_doc.supplier, year_start_date, year_end_date)
 
-		total_invoiced_amount = supplier_credit_amount + tds_deducted + ref_doc.net_total - debit_note_amount
+		total_invoiced_amount = flt(supplier_credit_amount) + flt(tds_deducted) \
+			+ flt(ref_doc.net_total) - flt(debit_note_amount)
 		if total_invoiced_amount >= tax_details.cumulative_threshold:
 			total_applicable_tds = total_invoiced_amount * tax_details.rate / 100
 			tds_amount = min(total_applicable_tds - tds_deducted, ref_doc.net_total)
