@@ -16,17 +16,11 @@ class TestTaxWithholdingCategory(unittest.TestCase):
 		# create relevant supplier, etc
 		create_records()
 
-	# @classmethod
-	# def tearDownClass(self):
-	# 	# create relevant supplier, etc
-	# 	reset_fiscal()
-
 	def test_single_threshold_tds(self):
 		frappe.db.set_value("Supplier", "Test TDS Supplier", "tax_withholding_category", "TDS - 194D - Individual")
 		pi = create_purchase_invoice()
 		pi.submit()
-		print(vars(pi))
-		print(vars(pi.taxes))
+
 		self.assertEqual(pi.taxes_and_charges_deducted, 800)
 		self.assertEqual(pi.grand_total, 15200)
 
@@ -78,9 +72,11 @@ def create_purchase_invoice(qty=1):
 	pi = frappe.get_doc({
 		"doctype": "Purchase Invoice",
 		"posting_date": today(),
+		"apply_tds": 1,
 		"supplier": frappe.get_doc('Supplier', {"supplier_name": "Test TDS Supplier"}).name,
 		"company": '_Test Company',
 		"taxes_and_charges": "",
+		"currency": "INR",
 		"credit_to": "Creditors - _TC",
 		"taxes": [],
 		"items": [{
@@ -91,8 +87,8 @@ def create_purchase_invoice(qty=1):
 			'cost_center': 'Main - _TC',
 			'expense_account': 'Stock Received But Not Billed - _TC'
 		}]
-	}).save()
-	pi.apply_tds = 1
+	})
+
 	pi.save()
 	return pi
 
@@ -114,25 +110,3 @@ def create_records():
 		"company": "_Test Company",
 		"is_stock_item": 0,
 	}).insert()
-
-	# # create item price
-	# frappe.get_doc({
-	# 	"doctype": "Item Price",
-	# 	"price_list": "Standard Buying",
-	# 	"item_code": item.item_code,
-	# 	"price_list_rate": 16000
-	# }).insert()
-
-# 	# change fiscal year to current
-# 	global_defaults = frappe.get_doc("Global Defaults", "Global Defaults")
-# 	frappe.cache().hset('current_fiscal_year', frappe.session.user, global_defaults.current_fiscal_year)
-# 	fy = get_fiscal_year(today())[0]
-# 	global_defaults.update({'current_fiscal_year': fy})
-# 	global_defaults.save()
-
-# def reset_fiscal():
-# 	global_defaults = frappe.get_doc("Global Defaults", "Global Defaults")
-# 	current_fiscal_year = frappe.cache().hget("current_fiscal_year", frappe.session.user)
-# 	global_defaults.update({'current_fiscal_year': current_fiscal_year})
-# 	global_defaults.save()
-
