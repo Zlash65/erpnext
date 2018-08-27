@@ -282,6 +282,15 @@ def get_basic_details(args, item):
 			"service_end_date": service_end_date
 		})
 
+	if item.enable_deferred_expense:
+		service_end_date = add_months(args.transaction_date, item.no_of_months)
+		out.update({
+			"enable_deferred_expense": item.enable_deferred_expense,
+			"deferred_expense_account": get_default_deferred_expense_account(args, item),
+			"service_start_date": args.transaction_date,
+			"service_end_date": service_end_date
+		})
+
 	# calculate conversion factor
 	if item.stock_uom == args.uom:
 		out.conversion_factor = 1.0
@@ -326,6 +335,14 @@ def get_default_deferred_revenue_account(args, item):
 		return (item.deferred_revenue_account
 			or args.deferred_revenue_account
 			or frappe.get_cached_value('Company',  args.company,  "default_deferred_revenue_account"))
+	else:
+		return None
+
+def get_default_deferred_expense_account(args, item):
+	if item.enable_deferred_expense:
+		return (item.deferred_expense_account
+			or args.deferred_expense_account
+			or frappe.get_cached_value('Company',  args.company,  "default_deferred_expense_account"))
 	else:
 		return None
 
