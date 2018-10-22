@@ -199,6 +199,7 @@ def get_children(doctype, parent=None, location=None, is_root=False):
 	return frappe.db.sql("""
 		select
 			name as value,
+			area, area_uom,
 			is_group as expandable
 		from
 			`tab{doctype}` comp
@@ -223,3 +224,17 @@ def add_node():
 
 def on_doctype_update():
 	frappe.db.add_index("Location", ["lft", "rgt"])
+
+@frappe.whitelist()
+def get_total_location(location):
+	if not location:
+		total_location = frappe.get_all("Location",
+			{"is_group": 1},
+			["sum(round(area, 3)) as area"])
+	else:
+		lft, rgt = frappe.db.get_value("Location", location, ["lft", "rgt"])
+		total_location = frappe.get_all("Location",
+			{"lft": [">=", lft], "rgt": ["<=", rgt], "name": ["!=", location]},
+			["sum(round(area, 3)) as area"])
+
+	return total_location[0].area if total_location else 0
