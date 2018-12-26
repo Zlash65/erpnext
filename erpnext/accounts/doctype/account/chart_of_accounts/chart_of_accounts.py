@@ -48,6 +48,10 @@ def create_charts(company, chart_template=None, existing_company=None):
 
 					account.flags.ignore_permissions = True
 
+					if frappe.local.flags.charts_builder:
+						account.flags.ignore_validate = True
+						account.flags.ignore_update = True
+
 					account.insert()
 
 					accounts.append(account_name_in_db)
