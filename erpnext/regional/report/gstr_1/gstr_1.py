@@ -528,10 +528,13 @@ def get_b2b_json(res, gstin):
 
 	for gst_in in res:
 		b2b_item, inv = {"ctin": gst_in, "inv": []}, []
-		if not gst_in: continue
+		if not gst_in:
+			b2b_item["ctin"] = "09AAICA0863C1ZX"
 
 		for d in res[gst_in]:
 			inv_items = {}
+			if not d.get("place_of_supply"):
+				d["place_of_supply"] = "9"
 			inv_items.update({
 				"inum": d["invoice_number"],
 				"idt": getdate(d["posting_date"]).strftime('%d-%m-%Y'),
@@ -546,6 +549,8 @@ def get_b2b_json(res, gstin):
 			itm_det = {"txval": d["taxable_value"], "rt": 18, "csamt": (d["cess_amount"] or 0)}
 
 			tax = flt(d["taxable_value"]/18, 2)
+			if not d.get("customer_gstin"):
+				d["customer_gstin"] = "09AAICA0863C1ZX"
 			if gstin[0:2] == d["customer_gstin"][0:2]:
 				itm_det.update({"camt": flt(tax/2, 2), "samt": flt(tax/2, 2)})
 			else:
